@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search RFM Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f4f4f4;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search RFM Data</h1>
+        <div>
+            <input type="text" id="searchQuery" placeholder="Search by customer name">
+            <select id="promotionFilter">
+                <option value="">Select Promotion Frequency</option>
+                <option value="Once everyday">Once everyday</option>
+                <option value="Once every 2 days">Once every 2 days</option>
+                <option value="Once every 3 days">Once every 3 days</option>
+                <option value="Once every week">Once every week</option>
+                <option value="Once every 2 weeks">Once every 2 weeks</option>
+                <option value="Once every month">Once every month</option>
+                <option value="Once every 2 months">Once every 2 months</option>
+            </select>
+            <select id="updateFilter">
+                <option value="">Select Update Frequency</option>
+                <option value="1">1 - Every update on interested category</option>
+                <option value="2">2 - Updates on interests</option>
+                <option value="3">3 - Updates on interested products alone</option>
+                <option value="4">4 - Updates on viewed products only</option>
+                <option value="5">5 - No updates</option>
+            </select>
+            <select id="rFilter">
+                <option value="">Select R Quartile</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <select id="fFilter">
+                <option value="">Select F Quartile</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <select id="mFilter">
+                <option value="">Select M Quartile</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <input type="text" id="interestFilter" placeholder="Search by product interest">
+            <button onclick="searchData()">Search</button>
+            <button onclick="displayAllData()">Display All</button>
+        </div>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>R Quartile</th>
+                    <th>F Quartile</th>
+                    <th>M Quartile</th>
+                    <th>RFM Class</th>
+                    <th>Product Interest</th>
+                    <th>Promotion Frequency</th>
+                    <th>Update Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function searchData() {
+            const searchQuery = document.getElementById('searchQuery').value;
+            const promotionFilter = document.getElementById('promotionFilter').value;
+            const updateFilter = document.getElementById('updateFilter').value;
+            const rFilter = document.getElementById('rFilter').value;
+            const fFilter = document.getElementById('fFilter').value;
+            const mFilter = document.getElementById('mFilter').value;
+            const interestFilter = document.getElementById('interestFilter').value;
+
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `searchQuery=${searchQuery}&promotionFilter=${promotionFilter}&updateFilter=${updateFilter}&rFilter=${rFilter}&fFilter=${fFilter}&mFilter=${mFilter}&interestFilter=${interestFilter}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayData(data);
+            });
+        }
+
+        function displayAllData() {
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: ''
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayData(data);
+            });
+        }
+
+        function displayData(data) {
+            const tableBody = document.querySelector('#dataTable tbody');
+            tableBody.innerHTML = '';
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                const columns = [
+                    'customer', 'R_Quartile', 'F_Quartile', 'M_Quartile', 
+                    'RFMClass', 'product_interest', 'promotion_frequency', 'update_frequency'
+                ];
+                columns.forEach(col => {
+                    const td = document.createElement('td');
+                    td.textContent = row[col];
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Display all data on initial load
+        displayAllData();
+    </script>
+</body>
+</html>

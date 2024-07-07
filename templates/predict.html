@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict RFM Score</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f4f4f4;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, button {
+            padding: 10px;
+            width: 100%;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Predict RFM Score</h1>
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" id="name">
+            <label for="recency">Recency (days since last purchase):</label>
+            <input type="number" id="recency">
+            <label for="frequency">Number of Times Visited (Frequency):</label>
+            <input type="number" id="frequency">
+            <label for="monetary">Total Purchase Amount (Monetary):</label>
+            <input type="number" id="monetary">
+            <label for="productInterest">Product Interest:</label>
+            <input type="text" id="productInterest">
+            <button onclick="predictRFM()">Predict</button>
+        </div>
+        <table id="predictionTable">
+            <thead>
+                <tr>
+                    <th>R Quartile</th>
+                    <th>F Quartile</th>
+                    <th>M Quartile</th>
+                    <th>RFM Class</th>
+                    <th>Product Interest</th>
+                    <th>Promotion Frequency</th>
+                    <th>Update Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Prediction result will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function predictRFM() {
+            const name = document.getElementById('name').value;
+            const recency = document.getElementById('recency').value;
+            const frequency = document.getElementById('frequency').value;
+            const monetary = document.getElementById('monetary').value;
+            const productInterest = document.getElementById('productInterest').value;
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    recency: recency,
+                    frequency: frequency,
+                    monetary: monetary,
+                    productInterest: productInterest
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#predictionTable tbody');
+                tableBody.innerHTML = '';
+                if (data.error) {
+                    const errorRow = document.createElement('tr');
+                    const errorCell = document.createElement('td');
+                    errorCell.colSpan = 7;
+                    errorCell.textContent = `Error: ${data.error}`;
+                    errorRow.appendChild(errorCell);
+                    tableBody.appendChild(errorRow);
+                } else {
+                    const row = document.createElement('tr');
+                    ['R_Quartile', 'F_Quartile', 'M_Quartile', 'RFMClass', 'product_interest', 'promotion_frequency', 'update_frequency'].forEach(col => {
+                        const cell = document.createElement('td');
+                        cell.textContent = data[col];
+                        row.appendChild(cell);
+                    });
+                    tableBody.appendChild(row);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
